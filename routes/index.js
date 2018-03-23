@@ -9,7 +9,7 @@ router.get('/', function(req, res, next) {
 
 router.get('/pay', function(req, res, next) {
     var response = {
-        'payment': false
+        'payment': true
     }
     res.send(response)
 });

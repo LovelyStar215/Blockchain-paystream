@@ -27,6 +27,8 @@
 		<script>
 			var url = "http://rdmedia.bbc.co.uk/dash/ondemand/testcard/1/client_manifest-events.mpd";
 			var player;
+			var frame = 0;
+			var payFrames = 2;
 
 			$('document').ready(init);
 
@@ -41,9 +43,13 @@
 			function onFragmentLoadingStarted(e) {
 				var request = e.request;
 				if (request.mediaType === "video") {
+					console.log('frame ' + frame);
 					// Do something
-					//console.log(e);
-					makePayment();
+					if (frame % payFrames == 0 && frame != 0) {
+						console.log('makePayment');
+						makePayment();
+					}
+					frame = frame + 1;
 				}
 			}
 
