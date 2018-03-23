@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Auto-player instantiation example, single videoElement, using src attribute</title>
+	<script src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
+	<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+	<style>
+		video {
+			width: 640px;
+			height: 360px;
+		}
+		textarea {
+			width: 500px;
+			height:360px;
+			font-size: 10px;
+		}
+		input, select {
+			background-color: orange;
+		}
+	</style>
+	</head>
+	<body>
+		<video controls id="videoPlayer"></video>
+
+		<script>
+			var url = "http://rdmedia.bbc.co.uk/dash/ondemand/testcard/1/client_manifest-events.mpd";
+			var player;
+
+			$('document').ready(init);
+
+			function init() {
+				player = dashjs.MediaPlayer().create();
+				player.initialize(document.querySelector("#videoPlayer"), url, true);
+				player.getDebug().setLogToBrowserConsole(false);
+				player.volume = 0;
+				player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
+			}
+
+			function onFragmentLoadingStarted(e) {
+				var request = e.request;
+				if (request.mediaType === "video") {
+					// Do something
+					//console.log(e);
+					makePayment();
+				}
+			}
+
+			function makePayment() {
+				$.ajax('/pay')
+				.done(function(data) {
+					if (data.payment === false) {
+						console.log('no payment');
+						player.pause();
+					} else {
+						console.log('payment succeeded');
+					}
+				})
+				.fail(function() {
+
+				})
+				.always(function() {
+
+				});
+			}
+		</script>
+	</body>
+</html>
+
