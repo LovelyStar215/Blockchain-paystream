@@ -16,9 +16,10 @@ router.get('/pay', function(req, res, next) {
     res.send(response)
 });
 
-router.get('/video/avc1/:segment', function(req, res, next) {
+router.get('/video/:encoding/:segment', function(req, res, next) {
 	var name = req.params.segment;
-	filename = path.join(__dirname, '../video', 'avc1', name);
+	var encoding = req.params.encoding;
+	filename = path.join(__dirname, '../video', encoding, name);
 
 	try {
 		stats = fs.lstatSync(filename); // throws if path doesn't exist
@@ -29,23 +30,11 @@ router.get('/video/avc1/:segment', function(req, res, next) {
 		return;
 	}
 
-
 	if (stats.isFile()) {
-		// path exists, is a file
-		var mimeType = 'application/octet-stream';
-		res.writeHead(200, {'Content-Type': mimeType} );
-
+		res.writeHead(200, {'Content-Type': 'application/octet-stream'} );
 		var fileStream = fs.createReadStream(filename);
 		fileStream.pipe(res);
-	} else if (stats.isDirectory()) {
-		// path exists, is a directory
-		res.writeHead(200, {'Content-Type': 'text/plain'});
-		res.write('Index of '+uri+'\n');
-		res.write('TODO, show index?\n');
-		res.end();
 	} else {
-		// Symbolic link, other?
-		// TODO: follow symlinks?  security?
 		res.writeHead(500, {'Content-Type': 'text/plain'});
 		res.write('500 Internal server error\n');
 		res.end();
