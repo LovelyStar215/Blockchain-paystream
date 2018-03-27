@@ -4,3 +4,8 @@ Run `npm install` to install dependencies. After this, run `bin/www`. A server w
 A DASH stream manifest is present at `/stream.mpd`. The dash.js video player on / will automatically start playing from this manifest. All video fragments as inaccessible (i.e. not stored in /public) and are loaded through a controller method which first checks if there are enough tokens to load the fragment.
 
 Payment succeeds through the `/pay` method. This should be called with some GET parameters to make a transaction. 
+
+### Database and migrations
+This project uses Sequelize in combination with the Sqlite driver for database migrations and ORM. Migrations are located in /migrations and models in /models.
+Run migrations using the following command:
+`node_modules/.bin/sequelize db:migrate` This will create an Sqlite file "database" with all migrations applied.
