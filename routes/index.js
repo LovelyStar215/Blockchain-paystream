@@ -13,6 +13,12 @@ router.get('/pay', function(req, res, next) {
     var response = {
         'payment': true
     }
+
+    Token.create({
+	    id: 1,
+	    count: 10
+    })
+
     res.send(response)
 });
 

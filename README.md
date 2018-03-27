@@ -6,6 +6,9 @@ A DASH stream manifest is present at `/stream.mpd`. The dash.js video player on 
 Payment succeeds through the `/pay` method. This should be called with some GET parameters to make a transaction. 
 
 ### Database and migrations
-This project uses Sequelize in combination with the Sqlite driver for database migrations and ORM. Migrations are located in /migrations and models in /models.
+This project uses Sequelize  for database migrations and ORM. Migrations are located in /migrations and models in /models.
 Run migrations using the following command:
-`node_modules/.bin/sequelize db:migrate` This will create an Sqlite file "database" with all migrations applied.
+`node_modules/.bin/sequelize db:migrate` 
+
+This project requires a running Mysql instance on localhost with user `root` and password `123` by default the `database_dev` database will be populated during migrating.
+Configuration of the database can be changed in /config/config.json.
