@@ -1,22 +1,20 @@
-var express = require('express');
+const express = require('express');
+const { check, validationResult } = require('express-validator/check');
+const { matchedData, sanitize } = require('express-validator/filter');
 const IlpPacket = require('ilp-packet')
-var url = require('url');
+const url = require('url');
 const xrp = require('./interledger').xrp()
 const uuid = require('uuid/v4')
 const crypto = require('crypto')
+const base64url = require('base64url')
 
 // https://github.com/interledger/tutorials/blob/master/streaming-payments/streaming-client1.js
 
-function base64url (buf) {
-  return buf.toString('base64')
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-function sha256 (preimage) {
+function sha256(preimage) {
   return crypto.createHash('sha256').update(preimage).digest()
 }
 
-function hmac (secret, input) {
+function hmac(secret, input) {
   return crypto.createHmac('sha256', secret).update(input).digest()
 }
 
@@ -26,19 +24,26 @@ xrp.connect().then(function () {
 	
 	var app = express();
 	
-	app.get('/PayFrame', function(req, res){
-		var parts = url.parse(req.url, true);
-		var query = parts.query;
-		console.log(query);
+	app.get('/PayFrame', [
+			check('destination', 'Destination must be a valid ripple test net address.').matches('test\\.crypto\\.xrp\\..*'),
+			check('amount', 'Amount must be an number.').isFloat(),
+			sanitize('amount').toFloat(),
+			check('sharedSecret').isBase64()
+		], function(req, res){
+		console.log('\nIncoming request')
 		
-		// TODO provide a payment address (shared secret from streaming-shop tutorial)
-		res.end('Pay frame')
-		// returns identifier for payment
-		
-		const destinationAddress = 'test.crypto.xrp.r4SChuqPedRaW1bxhLLvFGpbQYNXEYQY6Y' // todo
-		const destinationAmount = '10' // todo
-		
-		const sharedSecret = Buffer.from('test', 'base64') // todo
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			console.log('Incorrect params')
+		  	return res.status(422).json({ errors: errors.mapped() });
+		}
+		const params = matchedData(req);
+		console.log('Params verified')
+
+		const destinationAddress = params.destination
+		const destinationAmount = params.amount.toString()
+		const sharedSecret = base64url.decode(params.sharedSecret) 
+
 		const ilpPacket = IlpPacket.serializeIlpPayment({
 			account: destinationAddress,
 			amount: destinationAmount,
@@ -48,6 +53,8 @@ xrp.connect().then(function () {
 		const fulfillment = hmac(fulfillmentGenerator, ilpPacket)
 		const condition = sha256(fulfillment)
 		
+		console.log('Sending payment')
+
 		xrp.sendTransfer({
 			id: uuid(),
 			from: xrp.getAccount(),
@@ -72,4 +79,16 @@ xrp.connect().then(function () {
 
 xrp.on('outgoing_fulfill', function (transferId, fulfillmentBase64) {
 	console.log("Payment success")
+})
+
+xrp.on('outgoing_cancel', function (transferId, fulfillmentBase64) {
+	console.log("Payment 1")
+})
+
+xrp.on('outgoing_message', function (transferId, fulfillmentBase64) {
+	console.log("Payment 2")
+})
+
+xrp.on('outgoing_prepare', function (transferId, fulfillmentBase64) {
+	console.log("Payment 3")
 })
