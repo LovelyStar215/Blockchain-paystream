@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Auto-player instantiation example, single videoElement, using src attribute</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/2.3.0/dash.all.debug.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/2.6.0/dash.all.debug.js"></script>
 	<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
 
 	<style>
@@ -38,10 +38,10 @@
 		// Login to populate paymentInfo variable
 		login();
 
-		// Init player element and attach manifest
+		// Init player object
 		player = dashjs.MediaPlayer().create();
 
-		// Modify all dashjs request to contain clientId in header
+		// Extend player XHR behavior
 		player.extend("RequestModifier", () => {
 					return {
 						modifyRequestHeader: xhr => {
@@ -50,25 +50,24 @@
 							return xhr;
 						}
 					};
-				},
-				true
-		);
+				}, true);
 
+		// Attach player to DOM
 		player.initialize(document.querySelector("#videoPlayer"), url, true);
 
 		// Disable dashjs debug output spam
 		player.getDebug().setLogToBrowserConsole(false);
 
-
 		// Attach event handler
 		player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
+
+		player.pause();
 	}
 
 	function onFragmentLoadingStarted(e) {
 		var request = e.request;
 		// Only interested in video fragment requests
 		if (request.mediaType === "video") {
-
 			console.log('frame ' + frame);
 			// Do something
 			makePayment();
@@ -80,8 +79,6 @@
 		$.ajax('/login')
 				.done(function (data) {
 					paymentInfo = data;
-
-					// Set global clientId var
 					window.clientId = data.clientId;
 				});
 	}
@@ -96,13 +93,15 @@
 			}
 		})
 				.done(function (data) {
-
+					if (!data.success) {
+						player.pause();
+					}
 				})
 				.fail(function (data) {
 
 				})
 				.always(function () {
-					console.log('XHR PayFrame');
+
 				});
 	}
 </script>

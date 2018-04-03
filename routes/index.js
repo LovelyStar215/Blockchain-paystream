@@ -50,9 +50,22 @@ router.get('/video/:encoding/:segment', function(req, res, next) {
 		var paid = false;
 
 		// do checks here
-		/*balances[base64url(sharedSecret)] -= frame_costs
-		res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
-		res.setHeader(`Frame-costs`, frame_costs)*/
+		var clientId = req.header('Pay-Token');
+
+		if (clientId) {
+			sharedSecret = Buffer.from(clientId, 'base64')
+			console.log('Accepted shared secret from client', clientId, balances)
+			if (balances[base64url(sharedSecret)] && balances[base64url(sharedSecret)] >= frame_costs) {
+				paid = true;
+				balances[base64url(sharedSecret)] -= frame_costs
+				res.setHeader('Pay-Balance', balances[base64url(sharedSecret)].toString())
+				res.setHeader('Frame-costs', frame_costs)
+			} else {
+				console.log('Client\'s balance too low to pay frame');
+			}
+		} else {
+			console.log('Denied shared secret from client', clientId, balances)
+		}
 
 		// serve frame?
 		if (paid || name === initFrameName) {
@@ -66,18 +79,6 @@ router.get('/video/:encoding/:segment', function(req, res, next) {
 		res.status(500).end();
 	}
 	return;
-
-
-
-	/*if (req.headers['pay-token']) {
-		sharedSecret = Buffer.from(req.headers['pay-token'], 'base64')
-	    console.log('Accepted shared secret from client', req.headers['pay-token'], balances)
-		if (balances[base64url(sharedSecret)]) {
-			if (balances[base64url(sharedSecret)] >= frame_costs) {
-				return;
-			}
-        }
-	}*/
 });
 
 router.get('/login', function(req, res, next) {
