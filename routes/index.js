@@ -59,6 +59,7 @@ router.get('/video/:encoding/:segment', function(req, res, next) {
 					fileStream.pipe(res);
             		balances[base64url(sharedSecret)] -= frame_costs
             		res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
+            		res.setHeader(`Frame-costs`, frame_costs)
 				} else {
 					res.writeHead(500, {'Content-Type': 'text/plain'});
 					res.write('500 Internal server error\n');
