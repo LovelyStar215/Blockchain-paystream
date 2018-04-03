@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Auto-player instantiation example, single videoElement, using src attribute</title>
-	<script src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/2.3.0/dash.all.debug.js"></script>
 	<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
 
 	<style>
@@ -11,84 +11,101 @@
 			width: 640px;
 			height: 360px;
 		}
+
 		textarea {
 			width: 500px;
-			height:360px;
+			height: 360px;
 			font-size: 10px;
 		}
+
 		input, select {
 			background-color: orange;
 		}
 	</style>
-	</head>
-	<body>
-		<video controls id="videoPlayer"></video>
+</head>
+<body>
+<video controls id="videoPlayer"></video>
 
-		<script>
-			var url = "stream.mpd";
-			var player;
-			var frame = 0;
-			var payFrames = 2;
+<script>
+	var url = "stream.mpd";
+	var player;
+	var frame = 0;
+	var paymentInfo;
 
-			var paymentInfo;
+	$('document').ready(init);
 
-			$('document').ready(init);
+	function init() {
+		// Login to populate paymentInfo variable
+		login();
 
-			function init() {
-				// Init player element and attach manifest
-				player = dashjs.MediaPlayer().create();
-				player.initialize(document.querySelector("#videoPlayer"), url, true);
+		// Init player element and attach manifest
+		player = dashjs.MediaPlayer().create();
 
-				// Disable dashjs debug output spam
-				player.getDebug().setLogToBrowserConsole(false);
+		// Modify all dashjs request to contain clientId in header
+		player.extend("RequestModifier", () => {
+					return {
+						modifyRequestHeader: xhr => {
+							// alter header to include unique token
+							xhr.setRequestHeader('Pay-Token', window.clientId);
+							return xhr;
+						}
+					};
+				},
+				true
+		);
 
-				// Login to populate paymentInfo variable
-				login();
+		player.initialize(document.querySelector("#videoPlayer"), url, true);
 
-				// Attach event handler
-				player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
-			}
+		// Disable dashjs debug output spam
+		player.getDebug().setLogToBrowserConsole(false);
 
-			function onFragmentLoadingStarted(e) {
-				var request = e.request;
-				// Only interested in video fragment requests
-				if (request.mediaType === "video") {
 
-					console.log('frame ' + frame);
-					// Do something
-					makePayment();
-					frame = frame + 1;
-				}
-			}
+		// Attach event handler
+		player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
+	}
 
-			function login() {
-				$.ajax('/login')
+	function onFragmentLoadingStarted(e) {
+		var request = e.request;
+		// Only interested in video fragment requests
+		if (request.mediaType === "video") {
+
+			console.log('frame ' + frame);
+			// Do something
+			makePayment();
+			frame = frame + 1;
+		}
+	}
+
+	function login() {
+		$.ajax('/login')
 				.done(function (data) {
 					paymentInfo = data;
-					console.log(data);
+
+					// Set global clientId var
+					window.clientId = data.clientId;
 				});
+	}
+
+	function makePayment() {
+		$.ajax({
+			url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
+			data: {
+				amount: paymentInfo.cost,
+				destination: paymentInfo.account + "." + paymentInfo.clientId,
+				sharedSecret: paymentInfo.sharedSecret,
 			}
-
-			function makePayment() {
-				$.ajax({
-					url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
-					data: {
-						amount: paymentInfo.cost,
-						destination: paymentInfo.account + "." + paymentInfo.clientId,
-						sharedSecret: paymentInfo.sharedSecret,
-					}
-				})
-				.done(function(data) {
+		})
+				.done(function (data) {
 
 				})
-				.fail(function(data) {
+				.fail(function (data) {
 
 				})
-				.always(function() {
+				.always(function () {
 					console.log('XHR PayFrame');
 				});
-			}
-		</script>
-	</body>
+	}
+</script>
+</body>
 </html>
 

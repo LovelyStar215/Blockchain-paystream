@@ -2,20 +2,21 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var path = require('path');
-const url = require('url')
-const crypto = require('crypto')
-const plugin = require('./plugins.js').xrp.Shop()
-const IlpPacket = require('ilp-packet')
-const http = require('http')
-const base64url = require('base64url')
+const url = require('url');
+const crypto = require('crypto');
+const plugin = require('./plugins.js').xrp.Shop();
+const IlpPacket = require('ilp-packet');
+const http = require('http');
+const base64url = require('base64url');
 
-const frame_costs = 1000000
+const frame_costs = 1000000;
 let normalizedCost = 0;
 let ledgerInfo;
 let account;
 
-let balances = {}
-let sharedSecrets = {}
+let balances = {};
+let sharedSecrets = {};
+let initFrameName = 'init.mp4';
 
 function sha256 (preimage) {
   return crypto.createHash('sha256').update(preimage).digest()
@@ -30,41 +31,53 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-
 router.get('/video/:encoding/:segment', function(req, res, next) {
 	var name = req.params.segment;
 	var encoding = req.params.encoding;
 	filename = path.join(__dirname, '../video', encoding, name);
-	if (req.headers['pay-token']) {
+
+	try {
+		stats = fs.lstatSync(filename); // throws if path doesn't exist
+	} catch (e) {
+		res.writeHead(404, {'Content-Type': 'text/plain'});
+		res.write('404 Not Found\n');
+		res.end();
+		return;
+	}
+
+	if (stats.isFile()) {
+		// make sure the frame is paid for. Init frame is free.
+		var paid = false;
+
+		// do checks here
+		/*balances[base64url(sharedSecret)] -= frame_costs
+		res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
+		res.setHeader(`Frame-costs`, frame_costs)*/
+
+		// serve frame?
+		if (paid || name === initFrameName) {
+			res.writeHead(200, {'Content-Type': 'application/octet-stream'} );
+			var fileStream = fs.createReadStream(filename);
+			fileStream.pipe(res);
+		} else {
+			res.status(403).end();
+		}
+	} else {
+		res.status(500).end();
+	}
+	return;
+
+
+
+	/*if (req.headers['pay-token']) {
 		sharedSecret = Buffer.from(req.headers['pay-token'], 'base64')
 	    console.log('Accepted shared secret from client', req.headers['pay-token'], balances)
 		if (balances[base64url(sharedSecret)]) {
 			if (balances[base64url(sharedSecret)] >= frame_costs) {
-            	try {
-					stats = fs.lstatSync(filename); // throws if path doesn't exist
-				} catch (e) {
-					res.writeHead(404, {'Content-Type': 'text/plain'});
-					res.write('404 Not Found\n');
-					res.end();
-					return;
-				}
-
-				if (stats.isFile()) {
-					res.writeHead(200, {'Content-Type': 'application/octet-stream'} );
-					var fileStream = fs.createReadStream(filename);
-					fileStream.pipe(res);
-            		balances[base64url(sharedSecret)] -= frame_costs
-            		res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
-            		res.setHeader(`Frame-costs`, frame_costs)
-				} else {
-					res.writeHead(500, {'Content-Type': 'text/plain'});
-					res.write('500 Internal server error\n');
-					res.end();
-				}
-            	return;
+				return;
 			}
         }
-	}
+	}*/
 });
 
 router.get('/login', function(req, res, next) {
