@@ -10,7 +10,6 @@ const base64url = require('base64url')
 
 // https://github.com/interledger/tutorials/blob/master/streaming-payments/streaming-client1.js
 
-http://localhost:8000/PayFrame?destination=test.crypto.xrp.rnfpRMmRr4afr3NhPtKWxqqcmqLx9nD2FL&amount=10&sharedSecret=G3qrtUcdpmLaaJT3hGpL9GPUibVez-EQ4ldikTTHyY0
 function sha256(preimage) {
   return crypto.createHash('sha256').update(preimage).digest()
 }
