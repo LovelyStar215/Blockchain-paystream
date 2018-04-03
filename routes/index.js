@@ -88,12 +88,16 @@ router.get('/login', function(req, res, next) {
 	}
 	res.setHeader(`Pay`, `interledger-psk ${normalizedCost} ${account}.${clientId} ${base64url(sharedSecret)}`)
 	res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
-	res.writeHead(402, {'Content-Type': 'text/plain'});
+	//res.writeHead(402, {'Content-Type': 'text/plain'});
 
-	res.write(`Please send an Interledger-PSK payment of` +
-          ` ${normalizedCost} ${ledgerInfo.currencyCode} to ${account}.${clientId}` +
-          ` using the shared secret ${base64url(sharedSecret)}\n` +
-          ` Balance: ${balances[base64url(sharedSecret)]}\n`);
+	res.send({
+		cost: normalizedCost,
+		currency: ledgerInfo.currencyCode,
+		account: account,
+		providerId: clientId,
+		secret: base64url(sharedSecret),
+		balance: balances[base64url(sharedSecret)]
+	});
 	res.end();
 });
 
