@@ -86,9 +86,9 @@ router.get('/login', function(req, res, next) {
 		// The client is just establishing its prepaid account, but hasn't paid yet
         balances[base64url(sharedSecret)] = 0
 	}
-	res.writeHead(402, {'Content-Type': 'text/plain'});
 	res.setHeader(`Pay`, `interledger-psk ${normalizedCost} ${account}.${clientId} ${base64url(sharedSecret)}`)
 	res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
+	res.writeHead(402, {'Content-Type': 'text/plain'});
 
 	res.write(`Please send an Interledger-PSK payment of` +
           ` ${normalizedCost} ${ledgerInfo.currencyCode} to ${account}.${clientId}` +
