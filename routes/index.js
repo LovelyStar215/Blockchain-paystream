@@ -9,7 +9,7 @@ const IlpPacket = require('ilp-packet')
 const http = require('http')
 const base64url = require('base64url')
 
-const frame_costs = 10
+const frame_costs = 1000000
 let normalizedCost = 0;
 let ledgerInfo;
 let account;

@@ -32,13 +32,12 @@ xrp.connect().then(function () {
 		], function(req, res){
 		console.log('\nIncoming request')
 		
-		//console.log(req.query.sharedSecret);
+		res.setHeader('Access-Control-Allow-Origin', '*')
 
 		// Validate request params
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			console.log('Incorrect params')
-			res.setHeader('Access-Control-Allow-Origin', '*')
 		  	return res.status(422).json({success:false, errors: errors.mapped() })
 		}
 		const params = matchedData(req);
