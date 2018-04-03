@@ -25,6 +25,8 @@
 </head>
 <body>
 <video controls id="videoPlayer"></video>
+<p>Client ID: <span id="clientId"></span></p><br>
+<p>Shared secret: <span id="secret"></span></p>
 
 <script>
 	var url = "stream.mpd";
@@ -80,6 +82,8 @@
 				.done(function (data) {
 					paymentInfo = data;
 					window.clientId = data.clientId;
+					$('#clientId').html(data.clientId);
+					$('#secret').html(data.sharedSecret);
 				});
 	}
 
