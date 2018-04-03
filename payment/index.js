@@ -35,6 +35,7 @@ xrp.connect().then(function () {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			console.log('Incorrect params')
+			res.setHeader('Access-Control-Allow-Origin', '*');
 		  	return res.status(422).json({ errors: errors.mapped() });
 		}
 		const params = matchedData(req);
@@ -64,7 +65,7 @@ xrp.connect().then(function () {
 			amount: destinationAmount,
 			executionCondition: base64url(condition),
 			ilp: base64url(ilpPacket)
-		})
+		}).catch((error) => { console.log(error)})
 	})
 	
 	app.get('/PaymentStatus', function(req, res){

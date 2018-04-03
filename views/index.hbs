@@ -30,44 +30,62 @@
 			var frame = 0;
 			var payFrames = 2;
 
+			var paymentInfo;
+
 			$('document').ready(init);
 
 			function init() {
+				// Init player element and attach manifest
 				player = dashjs.MediaPlayer().create();
 				player.initialize(document.querySelector("#videoPlayer"), url, true);
+
+				// Disable dashjs debug output spam
 				player.getDebug().setLogToBrowserConsole(false);
-				player.volume = 0;
+
+				// Login to populate paymentInfo variable
+				login();
+
+				// Attach event handler
 				player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
 			}
 
 			function onFragmentLoadingStarted(e) {
 				var request = e.request;
+				// Only interested in video fragment requests
 				if (request.mediaType === "video") {
+
 					console.log('frame ' + frame);
 					// Do something
-					if (frame % payFrames == 0 && frame != 0) {
-						console.log('makePayment');
-						makePayment();
-					}
+					makePayment();
 					frame = frame + 1;
 				}
 			}
 
+			function login() {
+				$.ajax('/login')
+				.done(function (data) {
+					paymentInfo = data;
+					console.log(data);
+				});
+			}
+
 			function makePayment() {
-				$.ajax('/pay')
-				.done(function(data) {
-					if (data.payment === false) {
-						console.log('no payment');
-						player.pause();
-					} else {
-						console.log('payment succeeded');
+				$.ajax({
+					url: 'http://localhost:8000/PayFrame',
+					data: {
+						amount: paymentInfo.cost,
+						destination: paymentInfo.account,
+						sharedSecret: paymentInfo.sharedSecret,
 					}
 				})
-				.fail(function() {
+				.done(function(data) {
+
+				})
+				.fail(function(data) {
 
 				})
 				.always(function() {
-
+					console.log('XHR PayFrame');
 				});
 			}
 		</script>
