@@ -96,7 +96,8 @@ router.get('/login', function(req, res, next) {
 		account: account,
 		providerId: clientId,
 		secret: base64url(sharedSecret),
-		balance: balances[base64url(sharedSecret)]
+		balance: balances[base64url(sharedSecret)],
+		paymentProviderUri: 'localhost:8000'
 	});
 	res.end();
 });
