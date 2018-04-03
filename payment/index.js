@@ -65,7 +65,7 @@ xrp.connect().then(function () {
 			amount: destinationAmount,
 			executionCondition: base64url(condition),
 			ilp: base64url(ilpPacket)
-		})
+		}).catch((error) => { console.log(error)})
 	})
 	
 	app.get('/PaymentStatus', function(req, res){

@@ -94,8 +94,8 @@ router.get('/login', function(req, res, next) {
 		cost: normalizedCost,
 		currency: ledgerInfo.currencyCode,
 		account: account,
-		providerId: clientId,
-		secret: base64url(sharedSecret),
+		clientId: clientId,
+		sharedSecret: sharedSecret.toString('base64'),
 		balance: balances[base64url(sharedSecret)],
 		paymentProviderUri: 'localhost:8000'
 	});

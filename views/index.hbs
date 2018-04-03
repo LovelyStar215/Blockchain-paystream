@@ -47,8 +47,6 @@
 
 				// Attach event handler
 				player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
-
-				makePayment();
 			}
 
 			function onFragmentLoadingStarted(e) {
@@ -58,8 +56,7 @@
 
 					console.log('frame ' + frame);
 					// Do something
-					console.log('makePayment');
-					//makePayment();
+					makePayment();
 					frame = frame + 1;
 				}
 			}
@@ -73,16 +70,22 @@
 			}
 
 			function makePayment() {
-				console.log('makPayment in');
-				$.ajax('http://localhost:8000/PayFrame')
+				$.ajax({
+					url: 'http://localhost:8000/PayFrame',
+					data: {
+						amount: paymentInfo.cost,
+						destination: paymentInfo.account,
+						sharedSecret: paymentInfo.sharedSecret,
+					}
+				})
 				.done(function(data) {
-					console.log('XHR action :)');
+
 				})
 				.fail(function(data) {
-					console.l
+
 				})
 				.always(function() {
-
+					console.log('XHR PayFrame');
 				});
 			}
 		</script>
