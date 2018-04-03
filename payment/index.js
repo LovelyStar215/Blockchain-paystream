@@ -28,7 +28,7 @@ xrp.connect().then(function () {
 			check('destination', 'Destination must be a valid ripple test net address.').matches('test\\.crypto\\.xrp\\..*'),
 			check('amount', 'Amount must be an number.').isFloat(),
 			sanitize('amount').toFloat(),
-			check('sharedSecret').isBase64()
+			check('sharedSecret').exists()
 		], function(req, res){
 		console.log('\nIncoming request')
 		
@@ -41,9 +41,10 @@ xrp.connect().then(function () {
 		const params = matchedData(req);
 		console.log('Params verified')
 
+
 		const destinationAddress = params.destination
 		const destinationAmount = params.amount.toString()
-		const sharedSecret = base64url.decode(params.sharedSecret) 
+		const sharedSecret = Buffer.from(params.sharedSecret, 'base64')
 
 		const ilpPacket = IlpPacket.serializeIlpPayment({
 			account: destinationAddress,
@@ -54,8 +55,8 @@ xrp.connect().then(function () {
 		const fulfillment = hmac(fulfillmentGenerator, ilpPacket)
 		const condition = sha256(fulfillment)
 		
-		console.log('Sending payment')
 
+		console.log(`    -- sharedSecrets: ${base64url(sharedSecret)}`)
 		xrp.sendTransfer({
 			id: uuid(),
 			from: xrp.getAccount(),

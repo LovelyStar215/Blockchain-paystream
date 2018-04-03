@@ -7,6 +7,7 @@ const crypto = require('crypto')
 const plugin = require('./plugins.js').xrp.Shop()
 const IlpPacket = require('ilp-packet')
 const http = require('http')
+const base64url = require('base64url')
 
 const frame_costs = 10
 let normalizedCost = 0;
@@ -15,11 +16,6 @@ let account;
 
 let balances = {}
 let sharedSecrets = {}
-
-function base64url (buf) {
-  return buf.toString('base64')
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
 
 function sha256 (preimage) {
   return crypto.createHash('sha256').update(preimage).digest()
@@ -82,21 +78,24 @@ router.get('/login', function(req, res, next) {
 	const clientId = base64url(crypto.randomBytes(8))
 	let sharedSecret = crypto.randomBytes(32)
 
+		console.log(`    -- Client id generated: ${clientId}`)
+
 	sharedSecrets[clientId] = sharedSecret
 	if (!balances[base64url(sharedSecret)]) {
 		// The client is just establishing its prepaid account, but hasn't paid yet
         balances[base64url(sharedSecret)] = 0
 	}
-	res.setHeader(`Pay`, `interledger-psk ${normalizedCost} ${account}.${clientId} ${base64url(sharedSecret)}`)
+	res.setHeader(`Pay`, `interledger-psk ${frame_costs} ${account}.${clientId} ${base64url(sharedSecret)}`)
 	res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
 	//res.writeHead(402, {'Content-Type': 'text/plain'});
 
+	console.log(`    -- sharedSecrets: ${base64url(sharedSecret)}`)
 	res.send({
-		cost: normalizedCost,
+		cost: frame_costs,
 		currency: ledgerInfo.currencyCode,
 		account: account,
 		clientId: clientId,
-		sharedSecret: sharedSecret.toString('base64'),
+		sharedSecret: base64url(sharedSecret),
 		balance: balances[base64url(sharedSecret)],
 		paymentProviderUri: 'localhost:8000'
 	});
@@ -130,6 +129,7 @@ plugin.connect().then(function () {
     	const payment = IlpPacket.deserializeIlpPayment(ilpPacket)
     	const clientId = payment.account.substring(plugin.getAccount().length + 1).split('.')[0]
     	const secret = sharedSecrets[clientId]
+
 
 	    if (!clientId || !secret) {
 	      // We don't have a fulfillment for this condition
