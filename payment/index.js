@@ -10,6 +10,7 @@ const base64url = require('base64url')
 
 // https://github.com/interledger/tutorials/blob/master/streaming-payments/streaming-client1.js
 
+http://localhost:8000/PayFrame?destination=test.crypto.xrp.rnfpRMmRr4afr3NhPtKWxqqcmqLx9nD2FL&amount=10&sharedSecret=G3qrtUcdpmLaaJT3hGpL9GPUibVez-EQ4ldikTTHyY0
 function sha256(preimage) {
   return crypto.createHash('sha256').update(preimage).digest()
 }
@@ -25,26 +26,31 @@ xrp.connect().then(function () {
 	var app = express();
 	
 	app.get('/PayFrame', [
-			check('destination', 'Destination must be a valid ripple test net address.').matches('test\\.crypto\\.xrp\\..*'),
-			check('amount', 'Amount must be an number.').isFloat(),
+			check('destination', 'Must be a valid ripple test net address.').matches('test\\.crypto\\.xrp\\..*'),
+			check('amount', 'Must be a number.').isFloat(),
 			sanitize('amount').toFloat(),
-			check('sharedSecret').isBase64()
+			check('sharedSecret').exists()
 		], function(req, res){
 		console.log('\nIncoming request')
 		
+		//console.log(req.query.sharedSecret);
+
+		// Validate request params
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			console.log('Incorrect params')
-			res.setHeader('Access-Control-Allow-Origin', '*');
-		  	return res.status(422).json({ errors: errors.mapped() });
+			res.setHeader('Access-Control-Allow-Origin', '*')
+		  	return res.status(422).json({success:false, errors: errors.mapped() })
 		}
 		const params = matchedData(req);
 		console.log('Params verified')
 
+		// Get verified params
 		const destinationAddress = params.destination
 		const destinationAmount = params.amount.toString()
-		const sharedSecret = base64url.decode(params.sharedSecret) 
+		const sharedSecret = base64url.toBuffer(params.sharedSecret) 
 
+		// Create payment condition
 		const ilpPacket = IlpPacket.serializeIlpPayment({
 			account: destinationAddress,
 			amount: destinationAmount,
@@ -53,9 +59,16 @@ xrp.connect().then(function () {
 		const fulfillmentGenerator = hmac(sharedSecret, 'ilp_psk_condition')
 		const fulfillment = hmac(fulfillmentGenerator, ilpPacket)
 		const condition = sha256(fulfillment)
-		
-		console.log('Sending payment')
 
+		// Send payment
+		console.log({
+			destinationAddress: destinationAddress,
+			destinationAmount: destinationAmount,
+			sharedSecret: base64url(sharedSecret),
+			condition: base64url(condition)
+		})
+
+		console.log('Sending payment')
 		xrp.sendTransfer({
 			id: uuid(),
 			from: xrp.getAccount(),
@@ -66,6 +79,8 @@ xrp.connect().then(function () {
 			executionCondition: base64url(condition),
 			ilp: base64url(ilpPacket)
 		}).catch((error) => { console.log(error)})
+
+		return res.status(200).json({success:true})
 	})
 	
 	app.get('/PaymentStatus', function(req, res){
