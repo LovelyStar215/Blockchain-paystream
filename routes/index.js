@@ -52,26 +52,31 @@ router.get('/video/:encoding/:segment', function(req, res, next) {
 		// do checks here
 		var clientId = req.header('Pay-Token');
 
-		if (clientId) {
+		if (clientId && name != initFrameName) {
 			console.log('Accepted shared secret from client', clientId, balances);
 
-			// Get shared secret byte array
-			secretArr = sharedSecrets[clientId];
-			if (secretArr) {
-				var secret = base64url(secretArr);
-				if (balances[secret] && balances[secret] >= frame_costs) {
-					paid = true;
-					balances[secret] -= frame_costs
-					res.setHeader('Pay-Balance', balances[secret].toString())
-					res.setHeader('Frame-costs', frame_costs)
-				} else {
-					console.log('Client\'s balance too low to pay frame');
+			secretBuf = sharedSecrets[clientId];
+
+			if (secretBuf) {
+				var secret = base64url(secretBuf);
+
+				if (secret) {
+					console.log(secret);
+
+					if (balances[secret] && balances[secret] >= frame_costs) {
+						paid = true;
+						balances[secret] -= frame_costs
+						res.setHeader('Pay-Balance', balances[secret].toString())
+						res.setHeader('Frame-costs', frame_costs)
+					} else {
+						console.log('Client\'s balance too low to pay frame');
+					}
 				}
-			} else {
-				console.log('Denied shared secret from client', clientId, balances)
 			}
+
+
 		} else {
-			console.log('No clientId in header!');
+			console.log('Denied shared secret from client', clientId, balances)
 		}
 
 		// serve frame?

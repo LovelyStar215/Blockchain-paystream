@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Auto-player instantiation example, single videoElement, using src attribute</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/2.6.0/dash.all.debug.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/2.6.7/dash.all.debug.js"></script>
 	<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
 
 	<style>
@@ -25,8 +25,9 @@
 </head>
 <body>
 <video controls id="videoPlayer"></video>
-<p>Client ID: <span id="clientId"></span></p><br>
+<p>Client ID: <span id="clientId"></span></p>
 <p>Shared secret: <span id="secret"></span></p>
+<p>Balance: <span id="balance">0</span></p>
 
 <script>
 	var url = "stream.mpd";
@@ -38,7 +39,7 @@
 
 	function init() {
 		// Login to populate paymentInfo variable
-		login();
+		login()
 
 		// Init player object
 		player = dashjs.MediaPlayer().create();
@@ -64,6 +65,12 @@
 		player.on('fragmentLoadingStarted', onFragmentLoadingStarted);
 
 		player.pause();
+
+		// Set this to a fairly high # of attempts: payment takes some time to process
+		player.setFragmentLoaderRetryAttempts(10);
+
+		// Talking about payments; let's start one right away
+		makePayment();
 	}
 
 	function onFragmentLoadingStarted(e) {
@@ -87,7 +94,7 @@
 				});
 	}
 
-	function makePayment() {
+	function makePayment(amount) {
 		$.ajax({
 			url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
 			data: {
@@ -105,7 +112,6 @@
 
 				})
 				.always(function () {
-
 				});
 	}
 </script>
