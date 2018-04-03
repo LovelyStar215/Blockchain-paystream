@@ -71,7 +71,7 @@
 
 			function makePayment() {
 				$.ajax({
-					url: 'http://localhost:8000/PayFrame',
+					url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
 					data: {
 						amount: paymentInfo.cost,
 						destination: paymentInfo.account + "." + paymentInfo.clientId,
