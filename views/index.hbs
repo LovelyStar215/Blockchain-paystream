@@ -68,6 +68,9 @@
 
 		// Set this to a fairly high # of attempts: payment takes some time to process
 		player.setFragmentLoaderRetryAttempts(10);
+
+		// Set the time after which loading of failed frame should recommence to 2.5 sec.
+		player.setFragmentLoaderRetryInterval(2000);
 	}
 
 	function onFragmentLoadingStarted(e) {
