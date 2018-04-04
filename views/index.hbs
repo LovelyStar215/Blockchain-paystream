@@ -70,7 +70,17 @@
 		// Set this to a fairly high # of attempts: payment takes some time to process
 		player.setFragmentLoaderRetryAttempts(10);
 
+		// Set the time after which loading of failed frame should recommence to 3s.
+		player.setFragmentLoaderRetryInterval(3000);
+
+		// Set time to buffer ahead (default is 80s)
+		player.setBufferAheadToKeep(20);
+
+		// Keep all the buffer (you've paid for this!)
+		player.setBufferToKeep(9999999);
+		
 		showClientXRPBalance();
+
 	}
 
 	function onFragmentLoadingStarted(e) {
@@ -96,10 +106,12 @@
 
 	function makePayment(amount) {
 		if(paymentInfo) {
+
+			// TODO Check hoeveel balance je hebt en bepaal of je een betaling doet. Betalen voor 5 payments vooruit
 			$.ajax({
 				url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
 				data: {
-					amount: paymentInfo.cost * 4,
+					amount: paymentInfo.cost * 5,
 					destination: paymentInfo.account + "." + paymentInfo.clientId,
 					sharedSecret: paymentInfo.sharedSecret,
 				}

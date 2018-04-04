@@ -4,8 +4,8 @@ const XrpEscrowPlugin = require('ilp-plugin-xrp-escrow')
 
 exports.xrp = function () {
 	return new XrpEscrowPlugin({
-		secret: 'snQHU4yCFBj5w7v34XGY3E7ennY7p',
-		account: 'rnLPbqtXVAk5CHLw26JYhM7hCKgmZ8WRqp',
+		secret: 'ssHHk9WAokkHX7TBXKx9hpa8DeBFR',
+		account: 'rwBVnDajkya4LGEy6tTWGqMW2jTmofv6EC',
 		server: 'wss://s.altnet.rippletest.net:51233',
 		prefix: 'test.crypto.xrp.'
 	})
