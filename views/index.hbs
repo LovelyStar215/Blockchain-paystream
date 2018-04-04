@@ -25,10 +25,17 @@
 </head>
 <body>
 <video controls id="videoPlayer"></video>
-<p>Client ID: <span id="clientId"></span></p>
-<p>Shared secret: <span id="secret"></span></p>
-<p>Frame cost in XRP: <span id="frameCost">0</span></p>
-<p>Client's XRP balance: <span id="client_xpr_balance">?</span></p>
+<div>
+	<h3>Stream information</h3>
+	<ul>
+		<li>Client ID: <span id="clientId">?</span></li>
+		<li>Shared secret: <span id="secret">?</span></li>
+		<li>Client balance: <span id="client_xpr_balance">?</span> XRP</li>
+		<li>Frame cost: <span id="frameCost">?</span> XRP</li>
+		<li>Loaded frames: <span id="lastFrame">?</span></li>
+	</ul>
+</div>
+
 
 <script>
 	var url = "stream.mpd";
@@ -83,7 +90,9 @@
 			console.log('frame ' + frame);
 			// Do something
 			makePayment();
+			$('#lastFrame').html(frame);
 			frame = frame + 1;
+
 		}
 	}
 
