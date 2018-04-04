@@ -93,10 +93,12 @@
 
 	function makePayment(amount) {
 		if(paymentInfo) {
+
+			// TODO Check hoeveel balance je hebt en bepaal of je een betaling doet. Betalen voor 5 payments vooruit
 			$.ajax({
 				url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
 				data: {
-					amount: paymentInfo.cost * 4,
+					amount: paymentInfo.cost * 5,
 					destination: paymentInfo.account + "." + paymentInfo.clientId,
 					sharedSecret: paymentInfo.sharedSecret,
 				}
