@@ -27,7 +27,7 @@
 <video controls id="videoPlayer"></video>
 <p>Client ID: <span id="clientId"></span></p>
 <p>Shared secret: <span id="secret"></span></p>
-<p>Balance: <span id="balance">0</span></p>
+<p>Frame cost in XRP: <span id="frameCost">0</span></p>
 <p>Client's XRP balance: <span id="client_xpr_balance">?</span></p>
 
 <script>
@@ -68,19 +68,12 @@
 		player.pause();
 
 		// Set this to a fairly high # of attempts: payment takes some time to process
-		player.setFragmentLoaderRetryAttempts(10);
+		player.setFragmentLoaderRetryAttempts(15);
 
-		// Set the time after which loading of failed frame should recommence to 3s.
-		player.setFragmentLoaderRetryInterval(3000);
+		// Set the time after which loading of failed frame should recommence
+		player.setFragmentLoaderRetryInterval(3500);
 
-		// Set time to buffer ahead (default is 80s)
-		player.setBufferAheadToKeep(20);
-
-		// Keep all the buffer (you've paid for this!)
-		player.setBufferToKeep(9999999);
-		
 		showClientXRPBalance();
-
 	}
 
 	function onFragmentLoadingStarted(e) {
@@ -101,6 +94,7 @@
 					window.clientId = data.clientId;
 					$('#clientId').html(data.clientId);
 					$('#secret').html(data.sharedSecret);
+					$('#frameCost').html(data.cost);
 				});
 	}
 
