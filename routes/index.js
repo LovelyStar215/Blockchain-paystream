@@ -61,7 +61,6 @@ router.get('/video/:encoding/:segment', function(req, res, next) {
 				var secret = base64url(secretBuf);
 
 				if (secret) {
-					console.log(secret);
 
 					if (balances[secret] && balances[secret] >= frame_costs) {
 						paid = true;
@@ -115,7 +114,7 @@ router.get('/login', function(req, res, next) {
 	res.setHeader(`Pay-Balance`, balances[base64url(sharedSecret)].toString())
 	//res.writeHead(402, {'Content-Type': 'text/plain'});
 
-	console.log(`    -- sharedSecrets: ${base64url(sharedSecret)}`)
+	console.log(`    -- Request: sharedSecret: ${base64url(sharedSecret)}`)
 	res.send({
 		cost: frame_costs,
 		currency: ledgerInfo.currencyCode,
@@ -159,7 +158,7 @@ plugin.connect().then(function () {
 
 	    if (!clientId || !secret) {
 	      // We don't have a fulfillment for this condition
-	      console.log(`    - Payment received with an unknown condition: ` +
+	      console.log(`    -- Payment received with an unknown condition: ` +
 	                                            `${transfer.executionCondition}`)
 
 	      plugin.rejectIncomingTransfer(transfer.id, {
@@ -174,19 +173,12 @@ plugin.connect().then(function () {
 	      })
 	      return
 	    }
-	    console.log(`    - Calculating hmac; for clientId ${clientId}, the shared secret is ${base64url(secret)}.`)
 	    const fulfillmentGenerator = hmac(secret, 'ilp_psk_condition')
 	    const fulfillment =  hmac(fulfillmentGenerator, ilpPacket)
 
 	    // Increase this client's balance
 	    balances[base64url(secret)] += parseInt(transfer.amount)
 
-	    console.log(`    - Increase balance for shared secret ${base64url(secret)} with ${transfer.amount} to ${balances[base64url(secret)]}. `)
-
-	    console.log(` \tAccepted payment with condition ` +
-	                                            `${transfer.executionCondition}.`)
-	    console.log(`    - Fulfilling transfer on the ledger ` +
-	                               `using fulfillment: ${base64url(fulfillment)}`)
 
 	    // The ledger will check if the fulfillment is correct and
 	    // if it was submitted before the transfer's rollback timeout

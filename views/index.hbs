@@ -68,9 +68,6 @@
 
 		// Set this to a fairly high # of attempts: payment takes some time to process
 		player.setFragmentLoaderRetryAttempts(10);
-
-		// Talking about payments; let's start one right away
-		makePayment();
 	}
 
 	function onFragmentLoadingStarted(e) {
@@ -95,24 +92,26 @@
 	}
 
 	function makePayment(amount) {
-		$.ajax({
-			url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
-			data: {
-				amount: paymentInfo.cost,
-				destination: paymentInfo.account + "." + paymentInfo.clientId,
-				sharedSecret: paymentInfo.sharedSecret,
-			}
-		})
-				.done(function (data) {
-					if (!data.success) {
-						player.pause();
-					}
-				})
-				.fail(function (data) {
+		if(paymentInfo) {
+			$.ajax({
+				url: 'http://' + paymentInfo.paymentProviderUri + '/PayFrame',
+				data: {
+					amount: paymentInfo.cost * 4,
+					destination: paymentInfo.account + "." + paymentInfo.clientId,
+					sharedSecret: paymentInfo.sharedSecret,
+				}
+			})
+			.done(function (data) {
+				if (!data.success) {
+					player.pause();
+				}
+			})
+			.fail(function (data) {
 
-				})
-				.always(function () {
-				});
+			})
+			.always(function () {
+			});
+		}
 	}
 </script>
 </body>

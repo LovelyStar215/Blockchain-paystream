@@ -40,9 +40,9 @@ xrp.connect().then(function () {
 			console.log('Incorrect params')
 		  	return res.status(422).json({success:false, errors: errors.mapped() })
 		}
-		const params = matchedData(req);
-		console.log('Params verified')
+
 		// Get verified params
+		const params = matchedData(req);
 		const destinationAddress = params.destination
 		const destinationAmount = params.amount.toString()
 		const sharedSecret = base64url.toBuffer(params.sharedSecret) 
@@ -53,12 +53,10 @@ xrp.connect().then(function () {
 			amount: destinationAmount,
 			data: ''
 		})
+		
 		const fulfillmentGenerator = hmac(sharedSecret, 'ilp_psk_condition')
 		const fulfillment = hmac(fulfillmentGenerator, ilpPacket)
 		const condition = sha256(fulfillment)
-		
-
-		console.log(`    -- sharedSecrets: ${base64url(sharedSecret)}`)
 
 		xrp.sendTransfer({
 			id: uuid(),
@@ -69,18 +67,12 @@ xrp.connect().then(function () {
 			amount: destinationAmount,
 			executionCondition: base64url(condition),
 			ilp: base64url(ilpPacket)
-		}).catch((error) => { console.log(error)})
+		}).then(
+			console.log('Payment has been send.')
+		). catch((error) => { console.log(error)})
 
 		return res.status(200).json({success:true})
 	})
-	
-	app.get('/PaymentStatus', function(req, res){
-		// provide payment identifier
-		res.end('Payment status');
-		// returns status for payment
-		// failure/success/in_progress something like that
-	});
-	
 	app.listen(8000);
 })
 
@@ -97,5 +89,5 @@ xrp.on('outgoing_message', function (transferId, fulfillmentBase64) {
 })
 
 xrp.on('outgoing_prepare', function (transferId, fulfillmentBase64) {
-	console.log("Payment 3")
+	//console.log("Payment 3")
 })
