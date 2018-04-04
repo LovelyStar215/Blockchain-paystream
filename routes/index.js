@@ -9,7 +9,7 @@ const IlpPacket = require('ilp-packet');
 const http = require('http');
 const base64url = require('base64url');
 
-const frame_costs = 1000000;
+const frame_costs = 1;
 let normalizedCost = 0;
 let ledgerInfo;
 let account;
@@ -53,7 +53,7 @@ router.get('/video/:encoding/:segment', function(req, res, next) {
 		var clientId = req.header('Pay-Token');
 
 		if (clientId && name != initFrameName) {
-			console.log('Accepted shared secret from client', clientId, balances);
+			console.log(' @Accepted shared secret from client', clientId, balances);
 
 			secretBuf = sharedSecrets[clientId];
 

@@ -10,6 +10,9 @@
 		video {
 			width: 640px;
 			height: 360px;
+			margin-left: auto;
+    		margin-right: auto;
+    		width: 50%;
 		}
 
 		textarea {
@@ -18,17 +21,23 @@
 			font-size: 10px;
 		}
 
+		.center {
+		    display: block;
+		    margin-left: auto;
+		    margin-right: auto;
+		}
+
 		input, select {
 			background-color: orange;
 		}
 	</style>
 </head>
 <body>
-<video controls id="videoPlayer"></video>
+<video controls id="videoPlayer" class="center"></video>
 <p>Client ID: <span id="clientId"></span></p>
 <p>Shared secret: <span id="secret"></span></p>
 <p>Balance: <span id="balance">0</span></p>
-<p>Client's XRP balance: <span id="client_xpr_balance">?</span></p>
+<p>Client's XRP balance(XRP): <span id="client_xpr_balance">?</span></p>
 
 <script>
 	var url = "stream.mpd";
@@ -137,7 +146,7 @@
 		}
 		$.ajax('http://' + paymentInfo.paymentProviderUri + '/GetBalance')
 		.done(function (data) {
-			$('#client_xpr_balance').text(data.balance);
+			$('#client_xpr_balance').text(data.balance / 1000000);
 		})
 		.fail(function(data) {
 			console.log('Failed to get client XRP balance')
