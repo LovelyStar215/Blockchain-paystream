@@ -33,11 +33,18 @@
 	</style>
 </head>
 <body>
+
 <video controls id="videoPlayer" class="center"></video>
-<p>Client ID: <span id="clientId"></span></p>
-<p>Shared secret: <span id="secret"></span></p>
-<p>Balance: <span id="balance">0</span></p>
-<p>Client's XRP balance(XRP): <span id="client_xpr_balance">?</span></p>
+<div>
+	<h3>Stream information</h3>
+	<ul>
+		<li>Client ID: <span id="clientId">?</span></li>
+		<li>Shared secret: <span id="secret">?</span></li>
+		<li>Client balance: <span id="client_xpr_balance">?</span> XRP</li>
+		<li>Frame cost: <span id="frameCost">?</span> XRP</li>
+		<li>Loaded frames: <span id="lastFrame">?</span></li>
+	</ul>
+</div>
 
 <script>
 	var url = "stream.mpd";
@@ -77,19 +84,12 @@
 		player.pause();
 
 		// Set this to a fairly high # of attempts: payment takes some time to process
-		player.setFragmentLoaderRetryAttempts(10);
+		player.setFragmentLoaderRetryAttempts(15);
 
-		// Set the time after which loading of failed frame should recommence to 3s.
-		player.setFragmentLoaderRetryInterval(3000);
+		// Set the time after which loading of failed frame should recommence
+		player.setFragmentLoaderRetryInterval(3500);
 
-		// Set time to buffer ahead (default is 80s)
-		player.setBufferAheadToKeep(20);
-
-		// Keep all the buffer (you've paid for this!)
-		player.setBufferToKeep(9999999);
-		
 		showClientXRPBalance();
-
 	}
 
 	function onFragmentLoadingStarted(e) {
@@ -99,7 +99,9 @@
 			console.log('frame ' + frame);
 			// Do something
 			makePayment();
+			$('#lastFrame').html(frame);
 			frame = frame + 1;
+
 		}
 	}
 
@@ -110,6 +112,7 @@
 					window.clientId = data.clientId;
 					$('#clientId').html(data.clientId);
 					$('#secret').html(data.sharedSecret);
+					$('#frameCost').html(data.cost);
 				});
 	}
 
