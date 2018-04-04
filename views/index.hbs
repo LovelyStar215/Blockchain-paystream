@@ -28,6 +28,7 @@
 <p>Client ID: <span id="clientId"></span></p>
 <p>Shared secret: <span id="secret"></span></p>
 <p>Balance: <span id="balance">0</span></p>
+<p>Client's XRP balance: <span id="client_xpr_balance">?</span></p>
 
 <script>
 	var url = "stream.mpd";
@@ -68,6 +69,8 @@
 
 		// Set this to a fairly high # of attempts: payment takes some time to process
 		player.setFragmentLoaderRetryAttempts(10);
+
+		showClientXRPBalance();
 	}
 
 	function onFragmentLoadingStarted(e) {
@@ -112,6 +115,26 @@
 			.always(function () {
 			});
 		}
+	}
+
+	function showClientXRPBalance() {
+		if (!paymentInfo)
+		{
+			setTimeout(showClientXRPBalance, 1000)
+			return
+		}
+		$.ajax('http://' + paymentInfo.paymentProviderUri + '/GetBalance')
+		.done(function (data) {
+			$('#client_xpr_balance').text(data.balance);
+		})
+		.fail(function(data) {
+			console.log('Failed to get client XRP balance')
+		})
+		.always(function() {
+			setTimeout(function() {
+				showClientXRPBalance()
+			}, 1000)
+		})
 	}
 </script>
 </body>

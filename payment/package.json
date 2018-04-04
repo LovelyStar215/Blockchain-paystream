@@ -8,9 +8,11 @@
   },
   "dependencies": {
     "base64url": "^2.0.0",
+    "cors": "^2.8.4",
     "express-validator": "^5.0.3",
     "ilp-packet": "^2.2.0",
     "ilp-plugin-xrp-escrow": "^1.0.5",
-    "npm": "^5.8.0"
+    "npm": "^5.8.0",
+    "request": "^2.85.0"
   }
 }

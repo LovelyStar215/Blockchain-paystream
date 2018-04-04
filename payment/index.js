@@ -7,6 +7,10 @@ const xrp = require('./interledger').xrp()
 const uuid = require('uuid/v4')
 const crypto = require('crypto')
 const base64url = require('base64url')
+var cors = require('cors')
+const request = require('request');
+
+var xrpAccountBalance = 0;
 
 // https://github.com/interledger/tutorials/blob/master/streaming-payments/streaming-client1.js
 
@@ -18,11 +22,30 @@ function hmac(secret, input) {
   return crypto.createHmac('sha256', secret).update(input).digest()
 }
 
+function getXRPAccountBalance() {
+	request('https://s.altnet.rippletest.net:51234', { json: {
+		"method": "account_info",
+		"params": [{"account": xrp._address}]
+	} }, (err, res, body) => {
+		if (err) { 
+			console.log('Error when getting XRP account balance')
+			console.log(err);
+		}
+		else {
+			xrpAccountBalance = body.result.account_data.Balance;
+		}
+		setTimeout(getXRPAccountBalance, 1000);
+	});
+}
+
 console.log("Starting server..")
 xrp.connect().then(function () {
 	console.log("XRP connected")
 	
+	getXRPAccountBalance();
+
 	var app = express();
+	app.use(cors());
 	
 	app.get('/PayFrame', [
 			check('destination', 'Must be a valid ripple test net address.').matches('test\\.crypto\\.xrp\\..*'),
@@ -31,8 +54,6 @@ xrp.connect().then(function () {
 			check('sharedSecret').exists()
 		], function(req, res){
 		console.log('\nIncoming request')
-		
-		res.setHeader('Access-Control-Allow-Origin', '*')
 
 		// Validate request params
 		const errors = validationResult(req);
@@ -72,7 +93,12 @@ xrp.connect().then(function () {
 		). catch((error) => { console.log(error)})
 
 		return res.status(200).json({success:true})
-	})
+	});
+
+	app.get('/GetBalance', [], function(req, res) {
+		return res.status(200).json({success:true, balance: xrpAccountBalance});
+	});
+
 	app.listen(8000);
 })
 
